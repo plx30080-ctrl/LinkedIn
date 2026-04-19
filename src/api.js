@@ -41,7 +41,7 @@ export async function generatePost({ apiKey, tone, length, randomize, idea, isRe
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 800,
       system: CODY_CONTEXT,
       messages: [{ role: 'user', content: messageContent }],
