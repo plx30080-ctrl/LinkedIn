@@ -2,7 +2,8 @@ import { CODY_CONTEXT, TONE_PROMPTS, LENGTHS, HOOKS, CLOSINGS, STRUCTURES } from
 
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
-const PROXY_URL = import.meta.env.VITE_API_PROXY_URL;
+const _raw = import.meta.env.VITE_API_PROXY_URL || '';
+const PROXY_URL = _raw && !_raw.startsWith('http') ? `https://${_raw}` : _raw;
 
 export function buildPrompt({ tone, length, randomize, idea, isRegen, hasImage }) {
   const len = LENGTHS.find(l => l.value === length);
