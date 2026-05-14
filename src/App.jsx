@@ -3,6 +3,8 @@ import { TONES, LENGTHS, QUEUE_KEY, API_KEY_STORAGE } from './constants';
 import { generatePost, compressImage } from './api';
 import './App.css';
 
+const ENV_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY || '';
+
 function LoadingDots() {
   return (
     <span className="dots">
@@ -41,6 +43,7 @@ export default function App() {
       if (q) setQueue(JSON.parse(q));
       const k = localStorage.getItem(API_KEY_STORAGE);
       if (k) setApiKey(k);
+      else if (ENV_API_KEY) setApiKey(ENV_API_KEY);
     } catch (e) {}
   }, []);
 
@@ -66,7 +69,7 @@ export default function App() {
 
   const clearKey = () => {
     localStorage.removeItem(API_KEY_STORAGE);
-    setApiKey('');
+    setApiKey(ENV_API_KEY || '');
     setApiKeyInput('');
   };
 
@@ -340,17 +343,36 @@ export default function App() {
         <div className="pane">
           <div className="lbl">Anthropic API Key</div>
           <p className="settings-note">
-            Saved to your browser only. Never sent anywhere except Anthropic's API directly.
-            Get one at <a href="https://console.anthropic.com" target="_blank" rel="noreferrer">console.anthropic.com</a>.
-            Each post costs roughly $0.003.
+            Calls go directly to Anthropic's API from your browser. Each post costs roughly $0.003.
+            Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noreferrer">console.anthropic.com</a>.
           </p>
-          {apiKey ? (
+          {ENV_API_KEY && apiKey === ENV_API_KEY && !localStorage.getItem(API_KEY_STORAGE) ? (
+            <div>
+              <div className="key-env-badge">Built-in key active</div>
+              <p className="settings-note" style={{ marginBottom: 14 }}>
+                A key is baked into this build. You can override it by saving your own below.
+              </p>
+              <input
+                type="password"
+                className="key-input"
+                placeholder="sk-ant-api03-... (override)"
+                value={apiKeyInput}
+                onChange={e => setApiKeyInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && saveKey()}
+              />
+              <button className="btn btn-blue" onClick={saveKey} disabled={!apiKeyInput.trim()} style={{ marginTop: 10 }}>
+                {keySaved ? 'Saved!' : 'Save Override Key'}
+              </button>
+            </div>
+          ) : apiKey ? (
             <div>
               <div className="key-saved">
-                <span className="key-label">Key saved</span>
+                <span className="key-label">Key active</span>
                 <span className="key-val">{apiKey.slice(0, 16)}...</span>
               </div>
-              <button className="btn btn-ghost" onClick={clearKey}>Remove Key</button>
+              <button className="btn btn-ghost" onClick={clearKey}>
+                {ENV_API_KEY ? 'Remove Override (revert to built-in)' : 'Remove Key'}
+              </button>
             </div>
           ) : (
             <div>
