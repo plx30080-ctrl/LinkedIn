@@ -248,31 +248,3 @@ textarea.ta::placeholder { color: #cbd5e1; }
 .q-body { font-size: 13px; line-height: 1.72; color: #334155; white-space: pre-wrap; font-weight: 400; }
 .q-idea { margin-top: 9px; padding-top: 9px; border-top: 1px solid #e2e8f0; font-family: 'DM Mono', monospace; font-size: 9px; color: #94a3b8; }
 
-/* Settings */
-.settings-note { font-size: 13px; color: #64748b; margin-bottom: 18px; line-height: 1.65; }
-.settings-note a { color: #2563eb; text-decoration: none; }
-.settings-note a:hover { text-decoration: underline; }
-.key-input {
-  width: 100%; max-width: 440px;
-  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-  padding: 11px 14px;
-  color: #0f172a;
-  font-family: 'DM Mono', monospace; font-size: 12px;
-  transition: border-color .18s, box-shadow .18s;
-}
-.key-input:focus { outline: none; border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
-.key-saved {
-  display: flex; align-items: center; gap: 10px;
-  padding: 11px 14px; margin-bottom: 12px;
-  background: #f0fdf4; border: 1px solid #a7f3d0;
-  border-radius: 8px;
-}
-.key-label { font-family: 'DM Mono', monospace; font-size: 11px; color: #059669; }
-.key-val { font-family: 'DM Mono', monospace; font-size: 10px; color: #6ee7b7; }
-.key-env-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px;
-  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px;
-  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .08em;
-  color: #2563eb; margin-bottom: 12px;
-}

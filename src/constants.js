@@ -90,4 +90,3 @@ export const STRUCTURES = [
 ];
 
 export const QUEUE_KEY = 'li_queue_v3';
-export const API_KEY_STORAGE = 'li_api_key';

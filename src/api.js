@@ -2,6 +2,8 @@ import { CODY_CONTEXT, TONE_PROMPTS, LENGTHS, HOOKS, CLOSINGS, STRUCTURES } from
 
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
+const PROXY_URL = import.meta.env.VITE_API_PROXY_URL;
+
 export function buildPrompt({ tone, length, randomize, idea, isRegen, hasImage }) {
   const len = LENGTHS.find(l => l.value === length);
   let p = `${TONE_PROMPTS[tone]}\n\nTarget length: ${len.words}.\n`;
@@ -20,7 +22,9 @@ export function buildPrompt({ tone, length, randomize, idea, isRegen, hasImage }
   return p;
 }
 
-export async function generatePost({ apiKey, tone, length, randomize, idea, isRegen, image }) {
+export async function generatePost({ tone, length, randomize, idea, isRegen, image }) {
+  if (!PROXY_URL) throw new Error('Proxy URL not configured. Add VITE_API_PROXY_URL to your GitHub secrets.');
+
   const prompt = buildPrompt({ tone, length, randomize, idea, isRegen, hasImage: !!image });
 
   let messageContent;
@@ -33,14 +37,9 @@ export async function generatePost({ apiKey, tone, length, randomize, idea, isRe
     messageContent = prompt;
   }
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch(PROXY_URL, {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-allow-browser': 'true',
-    },
+    headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 800,

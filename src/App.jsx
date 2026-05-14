@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { TONES, LENGTHS, QUEUE_KEY, API_KEY_STORAGE } from './constants';
+import { TONES, LENGTHS, QUEUE_KEY } from './constants';
 import { generatePost, compressImage } from './api';
 import './App.css';
-
-const ENV_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY || '';
 
 function LoadingDots() {
   return (
@@ -14,10 +12,6 @@ function LoadingDots() {
 }
 
 export default function App() {
-  const [apiKey, setApiKey] = useState('');
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [keySaved, setKeySaved] = useState(false);
-
   const [idea, setIdea] = useState('');
   const [tone, setTone] = useState('practical');
   const [length, setLength] = useState('medium');
@@ -41,9 +35,6 @@ export default function App() {
     try {
       const q = localStorage.getItem(QUEUE_KEY);
       if (q) setQueue(JSON.parse(q));
-      const k = localStorage.getItem(API_KEY_STORAGE);
-      if (k) setApiKey(k);
-      else if (ENV_API_KEY) setApiKey(ENV_API_KEY);
     } catch (e) {}
   }, []);
 
@@ -57,20 +48,6 @@ export default function App() {
   const persist = (q) => {
     setQueue(q);
     try { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); } catch (e) {}
-  };
-
-  const saveKey = () => {
-    if (!apiKeyInput.trim()) return;
-    localStorage.setItem(API_KEY_STORAGE, apiKeyInput.trim());
-    setApiKey(apiKeyInput.trim());
-    setKeySaved(true);
-    setTimeout(() => setKeySaved(false), 2000);
-  };
-
-  const clearKey = () => {
-    localStorage.removeItem(API_KEY_STORAGE);
-    setApiKey(ENV_API_KEY || '');
-    setApiKeyInput('');
   };
 
   const handleImage = async (e) => {
@@ -92,13 +69,12 @@ export default function App() {
   };
 
   const run = async (isRegen) => {
-    if (!apiKey) { setError('Add your API key in the Settings tab first.'); return; }
     if (!idea.trim() && !image) return;
     setLoading(true);
     setError('');
     if (!isRegen) { setDraft(''); setHadResult(false); }
     try {
-      const text = await generatePost({ apiKey, tone, length, randomize, idea, isRegen, image });
+      const text = await generatePost({ tone, length, randomize, idea, isRegen, image });
       setDraft(text);
       setHadResult(true);
     } catch (err) {
@@ -131,7 +107,7 @@ export default function App() {
 
   const wc = t => t.trim().split(/\s+/).filter(Boolean).length;
   const queuedCount = queue.filter(p => p.status === 'queued').length;
-  const canGenerate = !loading && (idea.trim() || image) && apiKey;
+  const canGenerate = !loading && (idea.trim() || image);
 
   return (
     <div className="app">
@@ -145,9 +121,6 @@ export default function App() {
         <button className={`tab ${tab === 'create' ? 'on' : ''}`} onClick={() => setTab('create')}>Create</button>
         <button className={`tab ${tab === 'queue' ? 'on' : ''}`} onClick={() => setTab('queue')}>
           Queue {queuedCount > 0 && <span className="bdg">{queuedCount}</span>}
-        </button>
-        <button className={`tab ${tab === 'settings' ? 'on' : ''}`} onClick={() => setTab('settings')}>
-          Settings {!apiKey && <span className="bdg alert">!</span>}
         </button>
       </nav>
 
@@ -238,10 +211,6 @@ export default function App() {
               </button>
             )}
           </div>
-
-          {!apiKey && (
-            <div className="warn">Add your Anthropic API key in Settings to get started.</div>
-          )}
 
           {error && <div className="err">{error}</div>}
 
@@ -334,59 +303,6 @@ export default function App() {
                   {post.idea && <div className="q-idea">Idea: {post.idea}</div>}
                 </div>
               ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {tab === 'settings' && (
-        <div className="pane">
-          <div className="lbl">Anthropic API Key</div>
-          <p className="settings-note">
-            Calls go directly to Anthropic's API from your browser. Each post costs roughly $0.003.
-            Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noreferrer">console.anthropic.com</a>.
-          </p>
-          {ENV_API_KEY && apiKey === ENV_API_KEY && !localStorage.getItem(API_KEY_STORAGE) ? (
-            <div>
-              <div className="key-env-badge">Built-in key active</div>
-              <p className="settings-note" style={{ marginBottom: 14 }}>
-                A key is baked into this build. You can override it by saving your own below.
-              </p>
-              <input
-                type="password"
-                className="key-input"
-                placeholder="sk-ant-api03-... (override)"
-                value={apiKeyInput}
-                onChange={e => setApiKeyInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && saveKey()}
-              />
-              <button className="btn btn-blue" onClick={saveKey} disabled={!apiKeyInput.trim()} style={{ marginTop: 10 }}>
-                {keySaved ? 'Saved!' : 'Save Override Key'}
-              </button>
-            </div>
-          ) : apiKey ? (
-            <div>
-              <div className="key-saved">
-                <span className="key-label">Key active</span>
-                <span className="key-val">{apiKey.slice(0, 16)}...</span>
-              </div>
-              <button className="btn btn-ghost" onClick={clearKey}>
-                {ENV_API_KEY ? 'Remove Override (revert to built-in)' : 'Remove Key'}
-              </button>
-            </div>
-          ) : (
-            <div>
-              <input
-                type="password"
-                className="key-input"
-                placeholder="sk-ant-api03-..."
-                value={apiKeyInput}
-                onChange={e => setApiKeyInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && saveKey()}
-              />
-              <button className="btn btn-blue" onClick={saveKey} disabled={!apiKeyInput.trim()} style={{ marginTop: 10 }}>
-                {keySaved ? 'Saved!' : 'Save Key'}
-              </button>
             </div>
           )}
         </div>
